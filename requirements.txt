@@ -1,0 +1,5 @@
+pandas>0.25
+numpy>0.17
+dash>=1.7
+plotly>4.4
+lasio
