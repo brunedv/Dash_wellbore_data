@@ -9,6 +9,7 @@ import json
 import plotly.express as px
 import pandas as pd
 import numpy as np
+import colorlover as cl
 
 
 from flask import Flask
@@ -23,7 +24,12 @@ from plotly.subplots import make_subplots
 
 data_lata_long = pd.read_csv('data/MannvilleWells_LatLong.csv')
 data_tops = pd.read_csv('data/data_tops.csv')
+data_tops.Pick = data_tops.Pick.replace('        ',None)
+data_tops.Pick = data_tops.Pick.astype('float')
 data_core = pd.read_csv('data/INTELLOG.TXT',sep='\t',names =['SitID','Depth','LithID','W_Tar','SW','VSH','PHI','RW'])
+
+list_tops = data_tops.Tops.unique()
+list_color = cl.scales['10']['qual']['Paired']
 
 styles = {
     'pre': {
@@ -47,6 +53,11 @@ fig_map = px.scatter_mapbox(data_lata_long, lat="lat", lon="lng", size_max=15
 app.layout = html.Div(children=[
     html.H1(children='Wellbore Data McMurray Field'),
     dcc.Graph( id='basic-interactions',figure=fig_map),
+    dcc.Dropdown(id='selected-tops', options=[
+        {'label': tops_c, 'value': tops_c} for tops_c in list_tops
+    ],
+    value=[list_tops[0]],
+    multi=True),
     dcc.Graph( id='cross_section',style={'width': 1500, 'overflowX': 'scroll'}),
 
     dash_table.DataTable(
@@ -89,8 +100,8 @@ def display_selected_wells(selectedData):
         return []
 @app.callback(
     Output('cross_section', 'figure'),
-    [Input('basic-interactions', 'selectedData')])
-def display_crossection(selectedData):
+    [Input('basic-interactions', 'selectedData'),Input('selected-tops', 'value')])
+def display_crossection(selectedData,list_tops):
     if selectedData!=None:
         index_selected = pd.DataFrame(selectedData["points"])
         data_sub = data_lata_long.loc[index_selected.pointNumber.values,['UWI','SitID','lat','lng']]
@@ -109,11 +120,42 @@ def display_crossection(selectedData):
             else:
                 data_sub.sort_values('lat',ascending=False,inplace=True)
         list_well_sub = data_sub.SitID.values.tolist()
-        fig = make_subplots(rows=1, cols=len(list_well_sub), shared_yaxes=True)
+        current_tops = data_tops[data_tops.SitID.isin(list_well_sub)]
+        current_tops_first = current_tops[current_tops.Tops.isin(list_tops)]
+        fig = make_subplots(rows=1, cols=len(list_well_sub), shared_yaxes=True,subplot_titles=list_well_sub)
         for j in range(len(list_well_sub)):
             data_core_sub = data_core[data_core.SitID==list_well_sub[j]]
-            fig.add_trace(go.Scatter(x=data_core_sub.VSH, y=data_core_sub.Depth),row=1, col=j+1)
-        fig.update_layout(title_text="Cross-section",width=5000,yaxis={'range':[data_core.Depth.max(),data_core.Depth.min()]},xaxis={'range':[0,1]})
+            fig.add_trace(go.Scattergl(x=data_core_sub.VSH, y=data_core_sub.Depth,marker={'color':'blue'}),row=1, col=j+1)
+        for j in range(len(list_well_sub)):
+            for h in range(len(list_tops)):
+                h_tops = list_tops[h]
+                if not(current_tops_first.loc[(current_tops_first.SitID==list_well_sub[j]) &(current_tops_first.Tops==h_tops),'Pick'].empty):
+                    fig.add_shape(
+                            # Line Horizontal
+                            go.layout.Shape(
+                                name=h_tops,
+                                type="line",
+                                x0=0,
+                                y0=float(current_tops_first.loc[(current_tops_first.SitID==list_well_sub[j]) &(current_tops_first.Tops==h_tops),'Pick'].values[0]),
+                                x1=1,
+                                y1=float(current_tops_first.loc[(current_tops_first.SitID==list_well_sub[j]) &(current_tops_first.Tops==h_tops),'Pick'].values[0]),
+                                xref= 'x'+str(j+1),
+                                yref= 'y'+str(j+1),
+                                line=dict(
+                                    color=list_color[h%10],
+                                    width=8,
+                                    dash="dashdot",
+                                ),
+                        )
+                    )
+        fig.update_layout(title_text="Cross-section",autosize=False,width=150*len(list_well_sub)
+                    ,yaxis={'range':[data_core.Depth.max(),data_core.Depth.min()]},xaxis={'range':[0,1]},
+                    showlegend=False)
+        """
+        fig.update_layout(title_text="Cross-section",autosize=True,
+                    yaxis={'range':[data_core.Depth.max(),data_core.Depth.min()]},xaxis={'range':[0,1]},
+                    showlegend=False)
+        """
         return fig
     else:
         return []
