@@ -53,11 +53,12 @@ fig_map = px.scatter_mapbox(data_lata_long, lat="lat", lon="lng", size_max=15
 app.layout = html.Div(children=[
     html.H1(children='Wellbore Data McMurray Field'),
     dcc.Graph( id='basic-interactions',figure=fig_map),
-    dcc.Dropdown(id='selected-tops', options=[
-        {'label': tops_c, 'value': tops_c} for tops_c in list_tops
-    ],
-    value=[list_tops[0]],
-    multi=True),
+    html.Div([
+       dcc.Dropdown(id='selected-tops', options=[
+        {'label': tops_c, 'value': tops_c} for tops_c in list_tops],value=[list_tops[0]], multi=True,className="six columns"),
+
+        html.Div(id='legend-tops',className="six columns"),
+    ], className="row"),
     dcc.Graph( id='cross_section',style={'width': 1500, 'overflowX': 'scroll'}),
 
     dash_table.DataTable(
@@ -98,6 +99,7 @@ def display_selected_wells(selectedData):
         return data_sub.to_dict("rows")
     else:
         return []
+
 @app.callback(
     Output('cross_section', 'figure'),
     [Input('basic-interactions', 'selectedData'),Input('selected-tops', 'value')])
@@ -130,21 +132,27 @@ def display_crossection(selectedData,list_tops):
             for h in range(len(list_tops)):
                 h_tops = list_tops[h]
                 if not(current_tops_first.loc[(current_tops_first.SitID==list_well_sub[j]) &(current_tops_first.Tops==h_tops),'Pick'].empty):
+                    depth_tops = float(current_tops_first.loc[(current_tops_first.SitID==list_well_sub[j]) &(current_tops_first.Tops==h_tops),'Pick'].values[0])
+                    fig.add_trace(go.Scattergl(x=[0.5], y= [depth_tops],mode='text',text=h_tops,textposition="top center",textfont={
+        "color": "Black",
+        "size": 12,
+    },),row=1, col=j+1)
+
                     fig.add_shape(
                             # Line Horizontal
                             go.layout.Shape(
                                 name=h_tops,
                                 type="line",
                                 x0=0,
-                                y0=float(current_tops_first.loc[(current_tops_first.SitID==list_well_sub[j]) &(current_tops_first.Tops==h_tops),'Pick'].values[0]),
+                                y0=depth_tops,
                                 x1=1,
-                                y1=float(current_tops_first.loc[(current_tops_first.SitID==list_well_sub[j]) &(current_tops_first.Tops==h_tops),'Pick'].values[0]),
+                                y1=depth_tops,
                                 xref= 'x'+str(j+1),
                                 yref= 'y'+str(j+1),
                                 line=dict(
                                     color=list_color[h%10],
-                                    width=8,
-                                    dash="dashdot",
+                                    width=2,
+                                    
                                 ),
                         )
                     )
