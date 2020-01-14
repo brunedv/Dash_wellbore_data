@@ -19,6 +19,6 @@ The web app should be available on localhost:5000
 ## Dashboard
 Select wells on the map using the plotly buttons.
 
-![Results of the segmentation](https://github.com/brunedv/Dash_wellbore_data/data/example.png)
+![Results of the segmentation](https://github.com/brunedv/Dash_wellbore_data/blob/master/data/example_dash.PNG)
 
 
