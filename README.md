@@ -21,4 +21,4 @@ Select wells on the map using the plotly buttons.
 
 ![Results of the segmentation](https://github.com/brunedv/Dash_wellbore_data/blob/master/data/example_dash.PNG)
 
-
+You can choose which log and tops to display.
