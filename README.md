@@ -1,6 +1,8 @@
 # Dash_wellbore_data
  
- A web app to visualize cross-section on the McMurray field. Data avalaible on https://ags.aer.ca/publications/SPE_006.html
+ A web app to visualize cross-section on the McMurray field. Data avalaible on https://ags.aer.ca/publications/SPE_006.html.
+ 
+ Deployed on heroku: https://dash-wellbore-data.herokuapp.com/.
  
  ## Install the dash web app
  
