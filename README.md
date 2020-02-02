@@ -8,7 +8,7 @@
  Requirements: Python 3.6+
  Clone or download the source code. Run 
  ```shell
-pip install -r requirements
+pip install -r requirements.txt
 ```
 then 
 ```shell
