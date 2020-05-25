@@ -4,6 +4,8 @@
  
  Deployed on heroku: https://dash-wellbore-data.herokuapp.com/.
  
+ Docker container: https://hub.docker.com/r/vbruned/dash_well_bore_data.
+ 
  ## Install the dash web app
  
  ### Python
