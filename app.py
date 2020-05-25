@@ -200,4 +200,4 @@ def display_crossection(selectedData, list_tops, select_logs):
         return []
 
 if __name__ == '__main__':
-    server.run(debug=True)
+    server.run(debug=True, host='0.0.0.0')
