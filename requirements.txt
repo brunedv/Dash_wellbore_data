@@ -9,3 +9,4 @@ utm
 sklearn
 colorlover
 gunicorn 
+dash-bootstrap-components
